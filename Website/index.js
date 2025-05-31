@@ -22,21 +22,15 @@ captureButton.addEventListener("click", () => {
 
     canvas.toBlob((blob) => {
         const formData = new FormData();
-        formData.append("image", blob, "capture.png");
-
-        fetch("http://localhost:8000/predict", {
+        formData.append("image", blob, "capture.png");        fetch("https://enviroapp.onrender.com/predict", {
             method: "POST",
             body: formData,
         })
             .then((response) => response.json())
             .then((data) => {
-                const previewDiv = document.getElementById("preview");
-                if (data.prediction !== undefined) {
-                    const classNames = ["cardboard", "glass", "metal", "paper", "plastic", "trash"];
-                    const recyclable = [true, true, true, true, true, false];
-                    const className = classNames[data.prediction] || `Class ${data.prediction}`;
-                    const isRecyclable = recyclable[data.prediction] ? "Recyclable" : "Not Recyclable";
-                    previewDiv.innerHTML = `<b>Prediction:</b> ${className}<br><b>Status:</b> ${isRecyclable}`;
+                const previewDiv = document.getElementById("preview");                if (data.material !== undefined) {
+                    const isRecyclable = data.recyclable ? "Recyclable" : "Not Recyclable";
+                    previewDiv.innerHTML = `<b>Material:</b> ${data.material}<br><b>Status:</b> ${isRecyclable}`;
                 } else if (data.error) {
                     previewDiv.innerText = `Error: ${data.error}`;
                 } else {
