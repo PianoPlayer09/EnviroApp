@@ -8,6 +8,7 @@ from PIL import Image
 import io
 import base64
 from torchvision.models.quantization import resnet50
+import os
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -83,4 +84,5 @@ async def predict(image: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))  # Use PORT from environment or default to 8000
+    uvicorn.run(app, host="0.0.0.0", port=port)
