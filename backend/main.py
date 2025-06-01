@@ -7,7 +7,6 @@ import torch.nn as nn
 from PIL import Image
 import io
 import base64
-from torchvision.models.quantization import resnet50
 import os
 
 # Initialize FastAPI app
@@ -26,16 +25,22 @@ app.add_middleware(
 num_classes = 6  # Update this if your number of classes is different
 model = None  # Initialize as None
 
-# Lazy load the quantized model
+# Lazy load the model - using standard ResNet18 (smaller and more memory efficient)
 @app.on_event("startup")
 async def load_model():
     global model
     if model is None:
-        model = resnet50(pretrained=False, quantize=True)  # Use quantized ResNet50
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, num_classes)
-        model.load_state_dict(torch.load("model_quantized.pt", map_location=torch.device("cpu")))
-        model.eval()
+        try:
+            # Use ResNet18 which is smaller and more efficient than ResNet50
+            model = models.resnet18(pretrained=False)
+            num_ftrs = model.fc.in_features
+            model.fc = nn.Linear(num_ftrs, num_classes)
+            model.load_state_dict(torch.load("model.pt", map_location=torch.device("cpu")))
+            model.eval()
+            print("Model loaded successfully")
+        except Exception as e:
+            print(f"Error loading model: {e}")
+            raise
 
 # Class index to material and recyclability mapping (update as needed)
 CLASS_MAP = {
@@ -57,6 +62,8 @@ preprocess = transforms.Compose([
 @app.post("/predict")
 async def predict(image: UploadFile = File(...)):
     try:
+        if model is None:
+            return JSONResponse(content={"error": "Model not loaded."}, status_code=503)
         # Read the uploaded image
         image_data = await image.read()
         pil_image = Image.open(io.BytesIO(image_data)).convert("RGB")  # Ensure RGB
