@@ -22,9 +22,18 @@ app.add_middleware(
 
 # Recreate the model architecture
 num_classes = 6  # Update this if your number of classes is different
-model = models.resnet50(pretrained=False)
-num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, num_classes)
+model = None  # Initialize as None
+
+# Lazy load the model
+@app.on_event("startup")
+async def load_model():
+    global model
+    if model is None:
+        model = models.resnet50(pretrained=False)
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Linear(num_ftrs, num_classes)
+        model.load_state_dict(torch.load("model_quantized.pt", map_location=torch.device("cpu")))
+        model.eval()
 
 # Class index to material and recyclability mapping (update as needed)
 CLASS_MAP = {
@@ -36,17 +45,9 @@ CLASS_MAP = {
     5: {"material": "trash", "recyclable": False},
 }
 
-# Load the state dictionary
-try:
-    model.load_state_dict(torch.load("model.pt", map_location=torch.device("cpu")))
-    model.eval()
-except Exception as e:
-    print(f"Error loading model.pt: {e}")
-    raise
-
-# Define image preprocessing
+# Optimize image preprocessing
 preprocess = transforms.Compose([
-    transforms.Resize((256, 192)),
+    transforms.Resize((128, 128)),  # Reduce resolution to save memory
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
