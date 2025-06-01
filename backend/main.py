@@ -7,6 +7,7 @@ import torch.nn as nn
 from PIL import Image
 import io
 import base64
+from torchvision.models.quantization import resnet50
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -24,12 +25,12 @@ app.add_middleware(
 num_classes = 6  # Update this if your number of classes is different
 model = None  # Initialize as None
 
-# Lazy load the model
+# Lazy load the quantized model
 @app.on_event("startup")
 async def load_model():
     global model
     if model is None:
-        model = models.resnet50(pretrained=False)
+        model = resnet50(pretrained=False, quantize=True)  # Use quantized ResNet50
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, num_classes)
         model.load_state_dict(torch.load("model_quantized.pt", map_location=torch.device("cpu")))

@@ -37,15 +37,14 @@ yarn-error.log*
 *.swp
 *.swo
 
-# Project specific
-*.pt
-*.joblib
-Garbage classification/
-
 # System
 .DS_Store
 Thumbs.db
 
+# Project specific
+Garbage classification/
+
 # Ensure model files are included
 !backend/model.pt
+!backend/model_quantized.pt
 !backend/model.joblib
