@@ -45,3 +45,7 @@ Garbage classification/
 # System
 .DS_Store
 Thumbs.db
+
+# Ensure model files are included
+!backend/model.pt
+!backend/model.joblib
