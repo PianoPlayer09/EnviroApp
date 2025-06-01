@@ -22,7 +22,11 @@ captureButton.addEventListener("click", () => {
 
     canvas.toBlob((blob) => {
         const formData = new FormData();
+<<<<<<< HEAD
         formData.append("image", blob, "capture.png");        fetch("https://enviroapp-1.onrender.com", {
+=======
+        formData.append("image", blob, "capture.png");        fetch("https://enviroapp.onrender1.com/predict", {
+>>>>>>> d884541e9d599176e91ab2d61b022267896a630d
             method: "POST",
             body: formData,
         })
